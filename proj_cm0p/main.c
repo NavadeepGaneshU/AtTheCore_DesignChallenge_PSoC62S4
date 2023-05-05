@@ -1,8 +1,7 @@
 /******************************************************************************
 * File Name:   main.c
 *
-* Description: This is the source code for CM0+ in the the CapSense on CM0+
-*              Application for ModusToolbox.
+* Description: This is the source code for CM0+ in the the Dual CPU Motor Control Application Project
 *
 * Related Document: See README.md
 *
@@ -76,7 +75,7 @@ static void ezi2c_isr(void);
 volatile bool capsense_scan_complete = false;
 cy_stc_scb_ezi2c_context_t ezi2c_context;
 
-uint32_t myMsg; /* reception message */
+uint32_t myMsg; 	/* reception message variable*/
 
 //int *pLED1_State, *pLED2_State, *pLED1_PWM, *pLED2_PWM = 0;
 
@@ -137,10 +136,6 @@ int main(void)
     initialize_led();
     initialize_capsense_tuner();
 
-    /*Take inhibit pins to HIGH*/
-//    cyhal_gpio_write(CYBSP_A8, HIGH);
-//    cyhal_gpio_write(CYBSP_A9, HIGH);
-
     /* Initialize CapSense */
     result = initialize_capsense();
 
@@ -189,11 +184,9 @@ int main(void)
                     /* The IPC data is received and processed.
                      * Free up the channel for the next transaction.
                      */
-                    	/*turn MOTOR1 ON*/
+                    	/*Allow MOTOR1 ON*/
                 	    cyhal_gpio_write(CYBSP_A8, HIGH);
                 	    cyhal_gpio_write(CYBSP_A9, HIGH);
-//                	    cyhal_gpio_write(MOTOR1, HIGH);
-//                	    cyhal_gpio_write(MOTOR2, HIGH);
 
                     Cy_IPC_Drv_ReleaseNotify(myIpc, MY_IPC_INTR_MASK);
                 }
@@ -201,6 +194,7 @@ int main(void)
                 {
                     /* Insert error handling */
                     Cy_SCB_UART_PutString(CYBSP_UART_HW, "Failed to receive MOTOR signal in IPC pipe\r\n");
+                    /*Inhibit motor action*/
             	    cyhal_gpio_write(CYBSP_A8, LOW);
             	    cyhal_gpio_write(CYBSP_A9, LOW);
                     cyhal_system_delay_ms(500);
@@ -480,34 +474,4 @@ static void initialize_capsense_tuner(void)
     Cy_SCB_EZI2C_Enable(CYBSP_EZI2C_HW);
 
 }
-/* [] END OF FILE */
-
-
-//#include "cy_pdl.h"
-//#include "cycfg.h"
-//#include "cybsp.h"
-//
-//int main(void)
-//{
-//    /* Enable global interrupts */
-//    __enable_irq();
-//
-//    cy_rslt_t result;
-//
-//    /* Initialize the device and board peripherals */
-//    result = cybsp_init() ;
-//    if (result != CY_RSLT_SUCCESS)
-//    {
-//        CY_ASSERT(0);
-//    }
-//
-//    /* Enable CM4. CY_CORTEX_M4_APPL_ADDR must be updated if CM4 memory layout is changed. */
-//    Cy_SysEnableCM4(CY_CORTEX_M4_APPL_ADDR);
-//
-//    for (;;)
-//    {
-//        Cy_SysPm_DeepSleep(CY_SYSPM_WAIT_FOR_INTERRUPT);
-//    }
-//}
-
 /* [] END OF FILE */

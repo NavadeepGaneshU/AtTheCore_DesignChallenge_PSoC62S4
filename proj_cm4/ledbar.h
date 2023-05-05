@@ -8,6 +8,7 @@
 #ifndef LEDBAR_H_
 #define LEDBAR_H_
 
+/*define threshold levels for 10 LEDs in the bar indicator*/
 #define ALS_THRESH_LEVEL1   10
 #define ALS_THRESH_LEVEL2   20
 #define ALS_THRESH_LEVEL3   30

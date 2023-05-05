@@ -1,8 +1,7 @@
 /*******************************************************************************
  * File Name:   main.c
  *
- * Description: This is the source code for CM4 in the the Dual CPU IPC Semaphore
- *              Application for ModusToolbox.
+ * Description: This is the source code for CM4 in the the Dual CPU Motor Control Application Project
  *
  * Related Document: See README.md
  *
@@ -56,9 +55,11 @@
 #define REF_RESISTOR_CHANNEL                (0)
 #define ALS_SENSOR_CHANNEL                  (2)
 #define HIGH								(1)
+
 /* Number of channels used */
 #define CHANNEL_COUNT                       (3)
 
+/*IPC includes*/
 #define MY_IPC_CHAN_INDEX       (8UL) /* Example of IPC channel index */
 #define MY_IPC_INTR_INDEX       (8UL) /* Example of IPC interrupt channel index */
 #define MY_IPC_INTR_MASK        (1UL << MY_IPC_INTR_INDEX) /* IPC release interrupt mask */
@@ -153,7 +154,6 @@ volatile uint8 fifo_intr_flag = false;
 
 int main(void)
 {
-    /* Configure P6[5] - JTAG Data to Analog High Z to avoid leakage current */
     /* This pin is logic high by default which causes leakage current on CY8CKIT-062S4 Pioneer Kit. */
     cyhal_gpio_configure(P6_5, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_ANALOG);
 
@@ -211,36 +211,20 @@ int main(void)
     /* Initialize and enable analog resources */
     init_analog_resources();
 
-    /* Initialize the User LED */
-    //result = cyhal_gpio_init(CYBSP_USER_LED, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, LED_STATE);
-    //CY_ASSERT(result == CY_RSLT_SUCCESS);
-
-    /* Initialize the User LED2 */
-    //result = cyhal_gpio_init(CYBSP_USER_LED2, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, LED_STATE);
-    //CY_ASSERT(result == CY_RSLT_SUCCESS);
-
-//    /* Initialize the MOTOR1 */
-//    result = cyhal_gpio_init(MOTOR1, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, LED_STATE);
-//    CY_ASSERT(result == CY_RSLT_SUCCESS);
-//
-//    /* Initialize the MOTOR2 */
-//    result = cyhal_gpio_init(MOTOR2, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, LED_STATE);
-//    CY_ASSERT(result == CY_RSLT_SUCCESS);
-
     /* Enable the timer to start the sampling process  */
     /* Using the device configurator, trigger interval from the timer is
     * set to 2.5ms which results in effective scan rate of 400sps for the SAR ADC.
     */
     Cy_SysAnalog_TimerEnable(PASS);
 
-    /* Unlock the semaphore and wake-up the CM0+ */
+    /* Unlock the semaphore and activate the CM0+ */
     Cy_IPC_Sema_Clear(SEMA_NUM, false);
     __SEV();
 
     /* \x1b[2J\x1b[;H - ANSI ESC sequence for clear screen */
     printf("\x1b[2J\x1b[;H");
 
-    printf("****************** Test App Ready to Run - I'm CM4!  ****************** \r\n\n");
+    printf("****************** Motor Control Test App Ready to Run - I'm CM4!  ****************** \r\n\n");
 
     printf("<Press the kit's user button to print messages>\r\n\n");
 
@@ -284,67 +268,61 @@ int main(void)
     	            /* Calculate the ambient light intensity in percentage */
     	            light_intensity = get_light_intensity(filtered_data[ALS_SENSOR_CHANNEL]);
 
-    	            /* Control the LED */
-//    	            if(light_intensity < ALS_LOW_THRESHOLD)
-//    	                cyhal_gpio_write(CYBSP_USER_LED2, CYBSP_LED_STATE_ON);
-//    	            else
-//    	            if(light_intensity > ALS_HIGH_THRESHOLD)
-//    	                cyhal_gpio_write(CYBSP_USER_LED2, CYBSP_LED_STATE_OFF);
     	        }
 
-    	        /*Bar LED display logic*/
-				if(light_intensity < ALS_THRESH_LEVEL1)
-				{
-					ALSLevel = eALSLevel1;
-				}
-				else if(light_intensity < ALS_THRESH_LEVEL2)
-				{
-					ALSLevel = eALSLevel2;
-				}
-				else if(light_intensity < ALS_THRESH_LEVEL3)
-				{
-					ALSLevel = eALSLevel3;
-				}
-				else if(light_intensity < ALS_THRESH_LEVEL4)
-				{
-					ALSLevel = eALSLevel4;
-				}
-				else if(light_intensity < ALS_THRESH_LEVEL5)
-				{
-					ALSLevel = eALSLevel5;
-				}
-				else if(light_intensity < ALS_THRESH_LEVEL6)
-				{
-					ALSLevel = eALSLevel6;
-				}
-				else if(light_intensity < ALS_THRESH_LEVEL7)
-				{
-					ALSLevel = eALSLevel7;
-				}
-				else if(light_intensity < ALS_THRESH_LEVEL8)
-				{
-					ALSLevel = eALSLevel8;
-				}
-				else if(light_intensity < ALS_THRESH_LEVEL9)
-				{
-					ALSLevel = eALSLevel9;
-				}
-				else if(light_intensity == ALS_THRESH_LEVEL10)
-				{
-					ALSLevel = eALSLevel10;
-				}
+		/*Bar LED display logic*/
+		if(light_intensity < ALS_THRESH_LEVEL1)
+		{
+			ALSLevel = eALSLevel1;
+		}
+		else if(light_intensity < ALS_THRESH_LEVEL2)
+		{
+			ALSLevel = eALSLevel2;
+		}
+		else if(light_intensity < ALS_THRESH_LEVEL3)
+		{
+			ALSLevel = eALSLevel3;
+		}
+		else if(light_intensity < ALS_THRESH_LEVEL4)
+		{
+			ALSLevel = eALSLevel4;
+		}
+		else if(light_intensity < ALS_THRESH_LEVEL5)
+		{
+			ALSLevel = eALSLevel5;
+		}
+		else if(light_intensity < ALS_THRESH_LEVEL6)
+		{
+			ALSLevel = eALSLevel6;
+		}
+		else if(light_intensity < ALS_THRESH_LEVEL7)
+		{
+			ALSLevel = eALSLevel7;
+		}
+		else if(light_intensity < ALS_THRESH_LEVEL8)
+		{
+			ALSLevel = eALSLevel8;
+		}
+		else if(light_intensity < ALS_THRESH_LEVEL9)
+		{
+			ALSLevel = eALSLevel9;
+		}
+		else if(light_intensity == ALS_THRESH_LEVEL10)
+		{
+			ALSLevel = eALSLevel10;
+		}
 
-			/*Update LED status*/
-			cyhal_gpio_write(CYBSP_D0 ,LedState[ALSLevel][eLed1]);
-			cyhal_gpio_write(CYBSP_D1 ,LedState[ALSLevel][eLed2]);
-			cyhal_gpio_write(CYBSP_D2 ,LedState[ALSLevel][eLed3]);
-			cyhal_gpio_write(CYBSP_D4 ,LedState[ALSLevel][eLed4]);
-			cyhal_gpio_write(CYBSP_D6 ,LedState[ALSLevel][eLed5]);
-			cyhal_gpio_write(CYBSP_D7 ,LedState[ALSLevel][eLed6]);
-			cyhal_gpio_write(CYBSP_D8 ,LedState[ALSLevel][eLed7]);
-			cyhal_gpio_write(CYBSP_D10 ,LedState[ALSLevel][eLed8]);
-			cyhal_gpio_write(CYBSP_D12 ,LedState[ALSLevel][eLed9]);
-			cyhal_gpio_write(CYBSP_D13 ,LedState[ALSLevel][eLed10]);
+		/*Update LED status*/
+		cyhal_gpio_write(CYBSP_D0 ,LedState[ALSLevel][eLed1]);
+		cyhal_gpio_write(CYBSP_D1 ,LedState[ALSLevel][eLed2]);
+		cyhal_gpio_write(CYBSP_D2 ,LedState[ALSLevel][eLed3]);
+		cyhal_gpio_write(CYBSP_D4 ,LedState[ALSLevel][eLed4]);
+		cyhal_gpio_write(CYBSP_D6 ,LedState[ALSLevel][eLed5]);
+		cyhal_gpio_write(CYBSP_D7 ,LedState[ALSLevel][eLed6]);
+		cyhal_gpio_write(CYBSP_D8 ,LedState[ALSLevel][eLed7]);
+		cyhal_gpio_write(CYBSP_D10 ,LedState[ALSLevel][eLed8]);
+		cyhal_gpio_write(CYBSP_D12 ,LedState[ALSLevel][eLed9]);
+		cyhal_gpio_write(CYBSP_D13 ,LedState[ALSLevel][eLed10]);
 
 		/* IPC conditional loop */
         if (cyhal_gpio_read(CYBSP_USER_BTN) == CYBSP_BTN_PRESSED)
